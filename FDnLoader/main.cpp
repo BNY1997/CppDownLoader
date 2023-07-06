@@ -7,10 +7,8 @@
 #include <mutex>
 #include <stdio.h>
 #include <stdlib.h>
-
-
 #include <curl/curl.h>
-
+#include <vector>
 int currThreadCnt;
 int totalThreadNum;
 long totalDownloadSize;
@@ -19,6 +17,7 @@ using std::map;
 using std::cout;
 using std::endl;
 using std::string;
+using std::vector;
 map <int, long> downloadMap;
 std::mutex m;
 
@@ -67,7 +66,7 @@ int progressFunction(void *ptr, double totalToDownload, double nowDownloaded, do
 			++i;
 		}
 		size = size - long(totalThreadNum) + 1L;
-		//cout <<"currentDownloadSize: "<<size << " tototalSize:"<<totalDownloadSize<<endl;
+		cout <<"currentDownloadSize: "<<size << " tototalSize:"<<totalDownloadSize<<endl;
 		m.unlock();
 	}
 	return 0;
@@ -151,6 +150,7 @@ bool download(int threadNum, string url, string path, string fileName)
 	{
 		return false;
 	}
+	vector<std::thread> threadList;
 
 	for (int i = 0; i < threadNum; i++)
 	{
@@ -184,11 +184,12 @@ bool download(int threadNum, string url, string path, string fileName)
 		currThreadCnt++;
 		m.unlock();
 		std::thread thread(workThread, pNode);
-		thread.detach();
+		threadList.push_back(std::move(thread));
 	}
-	while (currThreadCnt > 0)
+
+	for (int i = 0; i < threadList.size(); i++)
 	{
-		Sleep(1000000L);
+		threadList[i].join();
 	}
 	return true;
 
