@@ -1,6 +1,8 @@
 #include <QApplication>
 
 #include "FDnMainWidget.h"
+#define NUM 32
+#define A 1;
 
 int main(int argc, char **argv)
 {
